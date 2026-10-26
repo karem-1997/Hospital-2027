@@ -59,9 +59,27 @@
         .info-card { background: #f8fafc; padding: 10px; border-radius: 12px; margin: 6px 15px; border-right: 4px solid var(--primary); text-align: right; font-size: 14px; }
         .admin-trigger { position: fixed; bottom: 20px; left: 20px; width: 40px; height: 40px; opacity: 0.1; cursor: pointer; z-index: 10002; }
         .empty-msg { grid-column: 1 / -1; text-align: center; color: #94a3b8; padding: 30px; font-size: 14px; }
+
+        /* ===== شاشة التحميل ===== */
+        #splash{position:fixed;inset:0;background:linear-gradient(160deg,#0284c7 0%,#0369a1 55%,#075985 100%);z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;transition:opacity .6s ease;}
+        #splash.hide{opacity:0;pointer-events:none;}
+        .splash-emoji{font-size:74px;animation:beat 1.4s ease-in-out infinite;filter:drop-shadow(0 8px 20px rgba(0,0,0,.3));}
+        @keyframes beat{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
+        .splash-dua{color:#fff;font-size:21px;font-weight:700;text-align:center;padding:0 30px;line-height:1.7;text-shadow:0 2px 10px rgba(0,0,0,.25);}
+        .splash-sub{color:rgba(255,255,255,.85);font-size:14px;font-weight:600;}
+        .splash-bar{width:min(280px,70vw);height:7px;background:rgba(255,255,255,.25);border-radius:10px;overflow:hidden;}
+        .splash-bar div{height:100%;width:40%;background:#fff;border-radius:10px;animation:slide 1.2s ease-in-out infinite;}
+        @keyframes slide{0%{margin-right:-40%}100%{margin-right:100%}}
     </style>
 </head>
 <body>
+
+    <div id="splash">
+        <div class="splash-emoji">🏥</div>
+        <div class="splash-dua">«اللَّهُمَّ اشْفِ كُلَّ مَرِيضٍ، وَاشْفِ كُلَّ جَرِيحٍ»</div>
+        <div class="splash-sub">جاري تجهيز الاستعلامات...</div>
+        <div class="splash-bar"><div></div></div>
+    </div>
 
     <div class="top-header">
         <h2 id="mainHeading">تحميل...</h2>
@@ -153,10 +171,15 @@
         let currentPathNodes = [{ id: 'root', name: 'الرئيسية' }];
         let isAdminMode = false;
 
+        let firstLoadDone = false;
         db.ref(DATA_PATH).on('value', (s) => {
             dataStore = s.val() || { cats: {}, drs: {}, settings: {} };
             render();
             updateGlobalSettings();
+            if(!firstLoadDone){
+                firstLoadDone = true;
+                setTimeout(()=>{ const sp = document.getElementById('splash'); if(sp){ sp.classList.add('hide'); setTimeout(()=>sp.remove(), 700); } }, 400);
+            }
         });
 
         function render() {
@@ -258,7 +281,7 @@
 
         function updateGlobalSettings() {
             const s = dataStore.settings || {};
-            document.getElementById('mainHeading').innerText = s.title || "المستشفى";
+            document.getElementById('mainHeading').innerText = s.title || "استعلامات المستشفى";
             document.title = (s.title || "استعلامات المستشفى");
             document.getElementById('footerDua').innerText = s.dua || "اللهم اشفِ كل مريض";
             const fb = document.getElementById('fbLink');
